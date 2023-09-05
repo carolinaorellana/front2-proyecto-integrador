@@ -60,7 +60,7 @@ window.addEventListener('load', function () {
                 // Guardamos el dato jwt en el local storage (este token de autenticación)
                 localStorage.setItem("jwt", JSON.stringify(data.jwt))
                 alert("Usuario creado correctamente")
-                location.replace("./mis-index.html")
+                location.replace("./index.html")
             }
         })
         .catch(error => {
@@ -74,8 +74,5 @@ window.addEventListener('load', function () {
                 alert("Error del servidor")
             }
         })
-        
     };
-
-
 });

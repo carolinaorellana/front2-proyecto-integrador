@@ -51,8 +51,9 @@ window.addEventListener('load', function () {
                 console.log(response);
 
                 // manejar el error de la request.
-                //  if (response.ok) 
-                return response.json()
+                if (!response.ok) {
+                    throw new Error(`${response.status}`)
+                }return response.json()
 
                 // si llego acá es por que la request no es la correcta y fuerzo el rechazo de la promesa del fetch
                 // return Promise.reject(response)
@@ -67,17 +68,17 @@ window.addEventListener('load', function () {
                     localStorage.setItem("jwt", JSON.stringify(data.jwt))
 
                     // redireccionamos a nuestro dashboard de todo
-                    // location.replace("./mis-tareas.html")
+                    location.replace("./mis-tareas.html")
                 }
 
             })
             .catch(err => {
                 console.warn("Promesa rechazada ");
                 console.log(err);
-                if (err.status == 400) {
-                    console.warn("Contraseña incorrecta")
+                if (err.message == 400) {
                     alert("Contraseña incorrecta")
-                } else if (err.status == 404) {
+                    console.warn("Contraseña incorrecta")
+                } else if (err.message == 404) {
                     console.warn("El usuario no existe")
                     alert("El usuario no existe")
                 } else {
