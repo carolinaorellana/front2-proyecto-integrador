@@ -109,7 +109,7 @@ main h2 {
     background-color: var(--app-grey);
     margin-bottom: .7rem;
     border-radius: .5rem;
-    border-left: .6rem solid grey;
+    border-left: .6rem solid rgb(128, 128, 128);
     padding: .5rem 1rem;
     display: flex;
     justify-content: space-between;
