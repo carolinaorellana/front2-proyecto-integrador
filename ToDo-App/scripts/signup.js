@@ -4,7 +4,7 @@ window.addEventListener('load', function () {
     const firstName=form['inputNombre']
     const lastName=form['inputApellido']
     const email=form['inputEmail']
-    const password = form['inputPassword']
+    const passwordInput = form['inputPassword']
     const passwordRepeated = form['inputPasswordRepetida']
     const url = "https://todo-api.ctd.academy/v1"
 
@@ -13,9 +13,35 @@ window.addEventListener('load', function () {
     /* -------------------------------------------------------------------------- */
     form.addEventListener('submit', function (event) {
         event.preventDefault()
+
+        const nombreNormalizado = normalizarTexto(firstName.value)
+        if (!validarTexto(nombreNormalizado)) {
+            alert('El nombre ingresado no debe incluir nùmeros o símbolos, con una longitud mínima de 2 caracteres. ')
+            return
+        }
+        const apellidoNormalizado = normalizarTexto(lastName.value)
+        if (!validarTexto(apellidoNormalizado)) {
+            alert('El apellido ingresado no debe incluir nùmeros o símbolos, con una longitud mínima de 2 caracteres. ')
+            return
+        }
+
+        const emailNormalizado = normalizarEmail(email.value)
+        if (!validarEmail(emailNormalizado)){
+            alert("Correo electrónico no válido")
+            return
+        }
+        //Validar el correo
+        //Validar la contraseña
+        password = passwordInput.value
+        const contraseniaValida = validarContrasenia(password);
+        if (!contraseniaValida) {
+            alert('La contraseña debe tener al menos una letra mayúscula, una letra minúscula, un número y no debe contener espacios en blanco, con una longitud mínima de 4 caracteres.');
+            return;
+        }
+        //Validar que coincidan las contraseñas
         let passwordsMatch = false;  
         while(!passwordsMatch){
-            if (password.value === passwordRepeated.value){
+            if (compararContrasenias(password,passwordRepeated)){
                 passwordsMatch = true
             }else {
                 alert('Contraseña no coinciden, intente de nuevo')

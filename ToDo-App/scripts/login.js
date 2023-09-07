@@ -4,22 +4,24 @@ window.addEventListener('load', function () {
     const email = document.querySelector("#inputEmail")
     const password = document.getElementById("inputPassword")
     const url = "https://todo-api.ctd.academy/v1"
-    // console.log(form);
+    
 
     /* -------------------------------------------------------------------------- */
     /*            FUNCIÓN 1: Escuchamos el submit y preparamos el envío           */
     /* -------------------------------------------------------------------------- */
     form.addEventListener('submit', function (event) {
         event.preventDefault()
-
-        //Creamos el cuerpo de la request (petición al servidor)
+        const emailNormalizado = normalizarEmail(email.value)
+        if (!validarEmail(emailNormalizado)){
+            alert("Correo electrónico no válido")
+            return
+        }
+            //Creamos el cuerpo de la request (petición al servidor)
         const payload = {
-            email: email.value,
+            email: emailNormalizado,
             password: password.value
         }
-        // vemos el objeto que recibimos del formulario
-        // console.log(payload);
-
+        
         //configuramos la request del Fetch
         const settings = {
             method: "POST",
@@ -28,23 +30,21 @@ window.addEventListener('load', function () {
                 'Content-Type': 'application/json'
             }
         }
-
         // Lanzamos la consulta del login a la API
         realizarLogin(settings)
-
+        
         // Limpiamos el formulario
         form.reset()
     });
 
-
+        
     /* -------------------------------------------------------------------------- */
     /*                     FUNCIÓN 2: Realizar el login [POST]                    */
     /* -------------------------------------------------------------------------- */
     function realizarLogin(settings) {
         // console.log(settings);
-        console.log("Lanzar la consulta a la API...");
-
-
+        // console.log("Lanzar la consulta a la API...");
+        
         fetch(`${url}/users/login`, settings)
             .then(response => {
                 console.log(response);
@@ -85,9 +85,6 @@ window.addEventListener('load', function () {
                     alert("Error del servidor | url no existe")
                 }
             })
-
-
-
     };
 
 
