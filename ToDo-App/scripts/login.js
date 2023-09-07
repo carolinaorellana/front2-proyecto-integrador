@@ -18,7 +18,7 @@ window.addEventListener('load', function () {
             password: password.value
         }
         // vemos el objeto que recibimos del formulario
-        console.log(payload);
+        // console.log(payload);
 
         //configuramos la request del Fetch
         const settings = {
@@ -34,7 +34,6 @@ window.addEventListener('load', function () {
 
         // Limpiamos el formulario
         form.reset()
-
     });
 
 

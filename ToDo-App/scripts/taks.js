@@ -1,8 +1,6 @@
 // SEGURIDAD: Si no se encuentra en localStorage info del usuario
 // no lo deja acceder a la página, redirigiendo al login inmediatamente.
 
-
-
 /* ------ comienzan las funcionalidades una vez que carga el documento ------ */
 window.addEventListener('load', function () {
 
@@ -24,48 +22,47 @@ window.addEventListener('load', function () {
   /* -------------------------------------------------------------------------- */
 
   btnCerrarSesion.addEventListener('click', function () {
-    localStorage.clear()
-    location.replace("./index.html")
+    const confirmacion = confirm("Estás seguro de que deseas cerrar la sesión")
+    
+    if (confirmacion){
+      localStorage.removeItem('jwt');
+      location.replace("./index.html")
+    }
   });
 
   /* -------------------------------------------------------------------------- */
   /*                 FUNCIÓN 2 - Obtener nombre de usuario [GET]                */
   /* -------------------------------------------------------------------------- */
 
-  function obtenerNombreUsuario() {
-    const settings = {
-      method: "GET",
-      headers: {
-        'Authorization': `${jwt}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+  async function obtenerNombreUsuario() {
+    try {
+      const settings = {
+        method: "GET",
+        headers: {
+          'Authorization': `${jwt}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
+      }
+      const response = await fetch(`${url}/users/getMe`, settings)
+      if (!response.ok){
+            throw new Error(`${response.status}`)
+      }
+      
+      const data= await response.json()
+      if (data) {
+          usernameElement.textContent = data.firstName + " " + data.lastName
+      }
+    } catch (error) {
+      console.warn("Promesa Rechazada");
+      console.log(error.message)
+      if (error.message == 404) {
+          alert("El usuario no existe")
+      } else {
+          console.warn("Error del servidor")
+          alert("Error del servidor")
       }
     }
-    fetch(`${url}/users/getMe`, settings)
-        .then(function (response) {
-          // console.log(response);
-            if (!response.ok){
-                throw new Error(`${response.status}`)
-            }return response.json()
-        })
-        .then(data => {
-          // console.log("Promesa cumplida💍");
-            if (data) {
-                // localStorage.setItem("user", JSON.stringify(data))
-                // alert(`Bienvenido ${data.firstName} ${data.lastName}`)
-                usernameElement.textContent = data.firstName + " " + data.lastName
-            }
-        })
-        .catch(error => {
-            console.warn("Promesa Rechazada");
-            console.log(error.message)
-            if (error.message == 404) {
-                alert("El usuario no existe")
-            } else {
-                console.warn("Error del servidor")
-                alert("Error del servidor")
-            }
-        })
   };
   /* -------------------------------------------------------------------------- */
   /*                 FUNCIÓN 3 - Obtener listado de tareas [GET]                */
@@ -109,14 +106,14 @@ window.addEventListener('load', function () {
   /* -------------------------------------------------------------------------- */
   /*                    FUNCIÓN 4 - Crear nueva tarea [POST]                    */
   /* -------------------------------------------------------------------------- */
-
-  formCrearTarea.addEventListener('submit', function (event) {
+  formCrearTarea.addEventListener('submit', async function (event) {
     event.preventDefault()
+
     const payload = {
       description: newTask.value,
       completed: false
     }
-    // console.log(payload);
+
     const settings_post = {
       method: "POST",
       body: JSON.stringify(payload),
@@ -125,25 +122,17 @@ window.addEventListener('load', function () {
         'Authorization': `${jwt}`,
         'Content-Type': 'application/json',
       }
-    }
-    // console.log(settings_post);
-    fetch(`${url}/tasks`, settings_post)
-    .then(function (response) {
-      // console.log(response);
-        if (!response.ok){
-            throw new Error(`${response.status}`)
-        }return response.json()
-    })
-    .then(data => {
-        // console.log(data);
-        alert('Tarea agregada correctamente')
-        formCrearTarea.reset()
-        consultarTareas()
-            // Seteamos el dato jwt del local storage (token de autenticación para consultar los datos del usuario)
-            // location.replace("./mis-index.htmls")
-        
-    })
-    .catch(error => {
+    } 
+    try {
+      const response = await fetch(`${url}/tasks`, settings_post)
+      if (!response.ok){
+          throw new Error(`${response.status}`)
+        }
+      const data = await response.json()
+      alert('Tarea agregada correctamente')
+      formCrearTarea.reset()
+      consultarTareas()
+    } catch (error) {
         console.warn("Promesa Rechazada");
         console.log(error.message)
         if (error.message == 400) {
@@ -154,9 +143,9 @@ window.addEventListener('load', function () {
             console.warn("Error del servidor")
             alert("Error del servidor")
         }
+      }    
     })
-  });
-
+  
   /* -------------------------------------------------------------------------- */
   /*                  FUNCIÓN 5 - Renderizar tareas en pantalla                 */
   /* -------------------------------------------------------------------------- */
@@ -175,29 +164,73 @@ window.addEventListener('load', function () {
       const div2 = document.createElement("div");
       div2.setAttribute("class", "nombre");
       div2.textContent = tarea.description
-      // Hacer que el texto sea editable al hacer clic en él
       div2.setAttribute("contentEditable", "true");
-
       // Agregar un evento para guardar los cambios cuando se presiona Enter o se pierde el enfoque
-      div2.addEventListener("keydown", function (event) {
+      div2.addEventListener("keydown", async function (event) {
         if (event.key === "Enter") {
           event.preventDefault();
+
           tarea.description = div2.textContent.trim();
-          div2.blur(); // Pierde el enfoque para guardar los cambios
+          div2.blur();
+          try {
+            const taskId = li.getAttribute("id"); // Asegúrate de obtener el ID adecuado aquí
+            const descripcionText = tarea.description;
+      
+            const payload_put = {
+              description: descripcionText,
+              completed: tarea.completed,
+            };
+      
+            const settings_put = {
+              method: "PUT",
+              body: JSON.stringify(payload_put),
+              headers: {
+                'Authorization': `${jwt}`,
+                'Content-Type': 'application/json',
+              }
+            };
+      
+            const response = await fetch(`${url}/tasks/${taskId}`, settings_put);
+      
+            if (!response.ok) {
+              throw new Error(`${response.status}`);
+            }
+      
+            alert('Tarea actualizada correctamente');
+            await consultarTareas();
+          } catch (error) {
+            console.warn("Ups Algo pasó");
+            console.log(error.message);
+            if (error.message == 400) {
+              alert("ID Inválido");
+            } else if (error.message == 401) {
+              alert("Requiere Autorización");
+            } else if (error.message == 404) {
+              alert("Tarea Inexistente");
+            } else {
+              console.warn("Error del servidor");
+              alert("Error del servidor");
+            }
+          }
         }
       });
-
+          // Pierde el enfoque para guardar los cambios
       div2.addEventListener("blur", function () {
         tarea.description = div2.textContent.trim();
       });
       const div3 = document.createElement("div");
       div3.setAttribute("class", "timestamp");
       const fechaOriginal = tarea.createdAt
-      const fecha = new Date(fechaOriginal)
+      const fecha = new Date(fechaOriginal);
       const dia = fecha.getDate();
-      const mes = fecha.getMonth() + 1; 
+      const mes = fecha.getMonth() + 1;
       const anio = fecha.getFullYear();
-      const fechaFormateada = `${dia < 10 ? '0' : ''}${dia}-${mes < 10 ? '0' : ''}${mes}-${anio}`;
+      const horas = fecha.getHours();
+      const minutos = fecha.getMinutes();
+      const ampm = horas >= 12 ? 'pm' : 'am'; // Determina si es AM o PM
+      const horas12 = horas % 12 || 12; // Convierte las horas a un formato de 12 horas
+
+      const fechaFormateada = `${dia < 10 ? '0' : ''}${dia}-${mes < 10 ? '0' : ''}${mes}-${anio} ${horas12}:${minutos} ${ampm}`;
       div3.textContent = "Fecha de creación: "+ fechaFormateada
       const button = document.createElement("button");
       button.setAttribute("type", "submit");
@@ -226,10 +259,17 @@ window.addEventListener('load', function () {
   async function botonesCambioEstado(event) {
     const taskId = event.target.closest('.tarea').id;
     const descripcionText = event.target.closest('.tarea').querySelector('.nombre').textContent;
+    const confirmacion = confirm(`¿Deseas marcar como completada la tarea: "${descripcionText}"?`);
+  
+    if (!confirmacion) {
+      return; // Si el usuario cancela, no hacemos nada
+    }
+
     const payload_put = {
       description: descripcionText,
       completed: true
     }
+
     try {
       const settings_put = {
         method: "PUT",
@@ -240,15 +280,13 @@ window.addEventListener('load', function () {
           'Content-Type': 'application/json',
         }
       }
-    response = await fetch(`${url}/tasks/${taskId}`, settings_put)
-      
-    if (!response.ok){
-      throw new Error(`${response.status}`)
-    }
-    alert('Tarea actualizada correctamente')
-    await consultarTareas()
+      const response = await fetch(`${url}/tasks/${taskId}`, settings_put)
         
-    
+      if (!response.ok){
+        throw new Error(`${response.status}`)
+      }
+      alert(`La tarea "${descripcionText}" se marcó como finalizada`)
+      await consultarTareas()
     } catch(error) {
       console.warn("Ups Algo pasó");
       console.log(error.message)
@@ -269,6 +307,13 @@ window.addEventListener('load', function () {
   /* -------------------------------------------------------------------------- */
   async function botonBorrarTarea(event) {
     const taskId = event.target.closest('.tarea').id;
+    const descripcionText = event.target.closest('.tarea').querySelector('.nombre').textContent;
+    const confirmacion = confirm(`¿Deseas eliminar la tarea: "${descripcionText}"?`);
+  
+    if (!confirmacion) {
+      return; // Si el usuario cancela, no hacemos nada
+    }
+
     const payload_del = {
       id: parseInt(taskId),
       }
