@@ -1,0 +1,5 @@
+firstName: "Douglas",
+lastName:"Guacaran",
+email:"admin1@admin.com",
+password: "12345"
+{jwt:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6I…Q3NH0.lXo0rgZD2rSoR_MVtMg1sD8i3OuGg6MpvSOBacX8pTA'}
